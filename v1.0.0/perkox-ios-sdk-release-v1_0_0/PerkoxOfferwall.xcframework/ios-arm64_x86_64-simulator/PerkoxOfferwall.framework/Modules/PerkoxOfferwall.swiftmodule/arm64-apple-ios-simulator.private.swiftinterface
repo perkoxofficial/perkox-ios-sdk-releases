@@ -15,7 +15,8 @@ import _SwiftConcurrencyShims
   public var options: [Swift.String : Any]
   public var onReward: (([Swift.String : Any?]) -> Swift.Void)?
   public var onClose: (() -> Swift.Void)?
-  public func launch(viewController: UIKit.UIViewController)
+  public var beta: Swift.Bool
+  public func launch(viewController: UIKit.UIViewController, beta: Swift.Bool = false)
   @objc deinit
 }
 public func create(appId: Swift.String, sdkKey: Swift.String, playerId: Swift.String) -> PerkoxOfferwall.Offerwall
