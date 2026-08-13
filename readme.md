@@ -17,12 +17,26 @@ A lightweight iOS SDK for integrating the Perkox Offerwall into your iOS applica
 
 ## Installation
 
-### Step 1: Download the SDK
+### Option 1: Swift Package Manager via Git (Recommended)
 
-Download the latest release zip from the [GitHub Releases](https://github.com/perkoxofficial/perkox-ios-sdk-releases/releases) page. Extract the zip anywhere you like — you will get a folder named `perkox-ios-sdk-release-{version}` containing a `Package.swift` and the bundled `PerkoxOfferwall.xcframework`.
+1. Open your project in Xcode.
+2. Go to **File → Add Package Dependencies…**
+3. Enter the repository URL:
+   ```
+   https://github.com/perkoxofficial/perkox-ios-sdk-releases.git
+   ```
+4. Set the dependency rule to **Up to Next Major Version** (e.g. `1.0.5`) and click **Add Package**.
+
+---
+
+### Option 2: Direct Local XCFramework / Download
+
+1. Download the latest release from the [GitHub Releases](https://github.com/perkoxofficial/perkox-ios-sdk-releases/releases) page.
+2. Drag `PerkoxOfferwall.xcframework` directly into your Xcode project under **Frameworks, Libraries, and Embedded Content**.
+3. Ensure **"Embed & Sign"** is selected.
 
 ```
-perkox-ios-sdk-release-{version}/
+perkox-ios-sdk-releases/
 ├── Package.swift
 └── PerkoxOfferwall.xcframework/
     ├── Info.plist
@@ -31,19 +45,6 @@ perkox-ios-sdk-release-{version}/
     └── ios-arm64_x86_64-simulator/
         └── PerkoxOfferwall.framework/
 ```
-
-### Step 2: Add the Package to Your Xcode Project
-
-In Xcode, add the SDK as a local Swift Package:
-
-1. Open your project in Xcode
-2. Go to **File → Add Package Dependencies…**
-3. In the bottom-left of the dialog, click **"Add Local…"**
-4. Navigate to and select the extracted `perkox-ios-sdk-release-{version}` folder
-5. Click **"Add Package"**
-6. In the next prompt, make sure your app target is checked, then click **"Add Package"** again
-
-> **Tip:** Place the extracted folder somewhere stable (e.g. next to your `.xcodeproj` file) before adding it, as Xcode references it by path.
 
 ---
 
