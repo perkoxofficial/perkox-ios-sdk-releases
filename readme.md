@@ -25,7 +25,7 @@ A lightweight iOS SDK for integrating the Perkox Offerwall into your iOS applica
    ```
    https://github.com/perkoxofficial/perkox-ios-sdk-releases.git
    ```
-4. Set the dependency rule to **Up to Next Major Version** (e.g. `1.0.5`) and click **Add Package**.
+4. Set the dependency rule to **Up to Next Major Version** (e.g. `2.0.0`) and click **Add Package**.
 
 ---
 
