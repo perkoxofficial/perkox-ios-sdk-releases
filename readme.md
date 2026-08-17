@@ -25,7 +25,7 @@ A lightweight iOS SDK for integrating the Perkox Offerwall into your iOS applica
    ```
    https://github.com/perkoxofficial/perkox-ios-sdk-releases.git
    ```
-4. Set the dependency rule to **Up to Next Major Version** (e.g. `2.0.0`) and click **Add Package**.
+4. Set the dependency rule to **Up to Next Major Version** (e.g. `2.0.1`) and click **Add Package**.
 
 ---
 
@@ -167,6 +167,13 @@ class ViewController: UIViewController {
 ---
 
 ## Changelog
+
+### v2.0.1
+- Fix Apple Privacy Manifest (`PrivacyInfo.xcprivacy`) Required Reason API category (`NSPrivacyAccessedAPICategoryUserDefaults` with code `CA92.1`) for App Store submission compliance (ITMS-91054).
+
+### v2.0.0
+- Add IDFA, IDFV, and App Tracking Transparency (ATT) signals.
+- Full device, network, and security anti-fraud signal injection.
 
 ### v1.0.0
 - Initial release
