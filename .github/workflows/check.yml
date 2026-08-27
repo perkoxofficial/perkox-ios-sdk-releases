@@ -1,0 +1,49 @@
+# Release repo for the iOS SDK, consumed through Swift Package Manager.
+#
+# The failure that matters here is a binaryTarget whose `path` does not exist.
+# SPM resolves that at integration time, in the consumer's project — so the
+# breakage surfaces in someone else's build, not ours, which is the worst place
+# for it to appear.
+#
+# Runs on ubuntu rather than macOS: parsing the manifest and confirming the
+# framework is present needs neither Xcode nor a macOS runner, and macOS minutes
+# cost roughly ten times as much. A check that is expensive to run is a check
+# people eventually turn off.
+
+name: Check
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Every binaryTarget path must exist
+        run: |
+          python3 - <<'PY'
+          import re, os, sys, zipfile
+          src = open('Package.swift').read()
+          paths = re.findall(r'\.binaryTarget\s*\([^)]*?path:\s*"([^"]+)"', src, re.S)
+          print(f"binaryTargets declared: {paths or 'none'}")
+          fail = []
+          if not paths:
+              fail.append("Package.swift declares no binaryTarget path — nothing ships")
+          for p in paths:
+              if not os.path.exists(p):
+                  fail.append(f"binaryTarget path '{p}' does not exist in the repo")
+              elif os.path.isdir(p) and not os.listdir(p):
+                  fail.append(f"binaryTarget path '{p}' is an empty directory")
+          for z in [f for f in os.listdir('.') if f.endswith('.zip')]:
+              if not zipfile.is_zipfile(z):
+                  fail.append(f"{z} is not a valid zip archive")
+          if fail:
+              for f in fail: print("::error::" + f)
+              sys.exit(1)
+          print("all binaryTarget paths resolve")
+          PY
