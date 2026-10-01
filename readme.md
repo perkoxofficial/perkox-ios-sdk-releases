@@ -78,25 +78,46 @@ The main entry point for the SDK.
 
 | Method | Parameters | Returns | Description |
 |---|---|---|---|
-| `create()` | `appId: String, sdkKey: String, playerId: String` | `Offerwall` | Creates a new Offerwall instance |
+| `create()` | `appId: String, sdkKey: String, playerId: String, beta: Bool = false` | `Offerwall` | Creates a new Offerwall instance. |
+| `syncPendingRewards()` | `appId: String, sdkKey: String, playerId: String, beta: Bool = false, callback: (([[String: Any?]]) -> Void)?` | `Void` | Synchronizes pending rewards completed while the app was closed. |
 
 ### Offerwall
 
 | Method / Property | Type | Description |
 |---|---|---|
-| `launch(viewController:)` | `UIViewController` | Presents the offerwall modally from the given view controller |
-| `onReward` | `(([String: Any?]) -> Void)?` | Callback triggered when a reward is received |
-| `onClose` | `(() -> Void)?` | Callback triggered when the offerwall is closed |
+| `launch(viewController:)` | `UIViewController` | Presents the offerwall modally and automatically syncs pending rewards. |
+| `onReward` | `(([String: Any?]) -> Void)?` | Callback triggered when a reward is received (supports all dynamic server fields). |
+| `onClose` | `(() -> Void)?` | Callback triggered when the offerwall is closed. |
 
 ---
 
-## Listening to Events
+### ⚡ Offline & Pending Rewards Auto-Sync
 
-You can listen to reward and close events by setting callbacks before launching the offerwall.
+When users complete offers (game milestones, surveys, etc.) outside of your application while your app is in the background or closed, rewards are **never lost**:
 
-> ⚠️ **Important:** Do **not** rely on the SDK's reward callbacks to grant rewards to users, as these callbacks only work when the offerwall is launched. Instead, use the postback URL you provided to Perkox to handle rewards on your server, or distribute the reward data using **webhooks** or similar server-side technologies for accurate and reliable reward processing.
+1. **Automatic Sync on Launch:** Calling `offerwall.launch(viewController: self)` automatically triggers a background query to fetch any pending rewards, delivers them to `onReward` on the Main Thread, and acknowledges receipt.
+2. **Explicit Background Sync:** You can also check for rewards on app startup or user login without presenting the offerwall:
 
-> **Note:** The `onReward` callback may be called multiple times for the same transaction with different statuses.
+```swift
+PerkoxOfferwall.syncPendingRewards(
+    appId: "YOUR_APP_ID",
+    sdkKey: "YOUR_SDK_KEY",
+    playerId: "Player_123"
+) { rewards in
+    for reward in rewards {
+        let amount = reward["amount"] as? Double ?? 0
+        let txid = reward["txid"] as? String ?? ""
+        let offerName = reward["offer_name"] as? String ?? "Offer"
+        print("Synced offline reward: \(amount) pts (TxID: \(txid), Offer: \(offerName))")
+    }
+}
+```
+
+---
+
+## Listening to Events & Dynamic Reward Payloads
+
+Server parameters (such as `click_id`, `cid`, `offer_id`, `sub1`..`sub5`, `payout`, `amount`, `status`) are **100% dynamically preserved** and accessible directly from the dictionary:
 
 ### Full Example with Callbacks
 
@@ -113,14 +134,17 @@ class ViewController: UIViewController {
             playerId: "Player_123"
         )
 
-        // Handle rewards
+        // Handle rewards with all dynamic server parameters
         offerwall.onReward = { reward in
             DispatchQueue.main.async {
                 let amount = reward["amount"] as? Double ?? 0
-                let status = reward["status"] as? String ?? "?"
-                let txid = reward["txid"] as? String ?? "?"
-                let playerId = reward["player_id"] as? String ?? "?"
-                print("Reward received! Amount: \(amount), Status: \(status)")
+                let status = reward["status"] as? String ?? "approved"
+                let txid = reward["txid"] as? String ?? ""
+                let playerId = reward["player_id"] as? String ?? ""
+                let clickId = reward["click_id"] as? String ?? ""
+                let offerId = reward["offer_id"]
+
+                print("Reward received! Amount: \(amount), TxID: \(txid), Offer: \(offerId ?? "")")
             }
         }
 
@@ -141,10 +165,16 @@ class ViewController: UIViewController {
 
 | Field | Type | Description |
 |---|---|---|
-| `amount` | `Double` | The reward amount |
-| `txid` | `String` | Unique transaction ID |
-| `status` | `String` | `"pending"` \| `"approved"` \| `"rejected"` \| `"reversed"` |
-| `player_id` | `String` | Player ID |
+| `amount` / `payout` | `Double` / `NSNumber` | The reward amount or points |
+| `txid` | `String` | Unique transaction identifier |
+| `status` | `String` | `"approved"`, `"pending"`, `"reversed"`, `"rejected"` |
+| `player_id` | `String` | Player identifier |
+| `click_id` | `String` | The conversion click ID (dynamic) |
+| `offer_id` | `Any?` | Offer ID (dynamic) |
+| `offer_name` | `String?` | Name of the completed offer |
+| `...custom` | `Any?` | Any custom advertiser/postback parameters preserved dynamically |
+
+> **Anti-Duplicate Guarantee:** Claimed reward transaction IDs are automatically posted back to the server (`POST /rewards/claim`), guaranteeing idempotent delivery across restarts.
 
 ---
 
