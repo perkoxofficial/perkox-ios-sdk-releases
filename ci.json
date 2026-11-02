@@ -1,0 +1,5 @@
+{
+  "image": "alpine:3.20",
+  "command": "test -f PerkoxOfferwall.xcframework.zip && apk add --no-cache unzip >/dev/null && unzip -t PerkoxOfferwall.xcframework.zip >/dev/null && echo 'xcframework archive intact'",
+  "note": "release artifact repo: verify the published xcframework zip is intact"
+}
