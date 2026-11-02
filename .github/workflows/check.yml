@@ -11,6 +11,9 @@
 # people eventually turn off.
 
 name: Check
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
   push:
